@@ -102,13 +102,46 @@ jobs:
 
       - name: Validate Compose profiles
         run: |
-          docker compose --profile monolito config >/dev/null
-          docker compose --profile desacoplado config >/dev/null
+          docker compose -f docker-compose-dev.yaml config >/dev/null
+          docker compose -f docker-compose-monolito.yaml config >/dev/null
+          docker compose -f docker-compose-prod.yaml --profile monolito config >/dev/null
+          docker compose -f docker-compose-prod.yaml --profile desacoplado config >/dev/null
 
-  build-and-push:
-    name: 2. Build and push Docker images
+  build-and-scan:
+    name: 2. Build and scan Docker images
     runs-on: ubuntu-latest
     needs: [tag-creation, verify]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image_name: monolito
+            dockerfile: monolito/Dockerfile
+          - image_name: api
+            dockerfile: desacoplado/backend/Dockerfile
+          - image_name: frontend
+            dockerfile: desacoplado/frontend/Dockerfile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build local image
+        run: docker build -f ${{ matrix.dockerfile }} -t gotodolist-${{ matrix.image_name }}:scan .
+
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          image-ref: gotodolist-${{ matrix.image_name }}:scan
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+
+  build-and-push:
+    name: 3. Build and push Docker images
+    runs-on: ubuntu-latest
+    needs: [tag-creation, verify, build-and-scan]
     permissions:
       contents: read
       packages: write
@@ -148,39 +181,10 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.image_name }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.image_name }}:${{ needs.tag-creation.outputs.created_tag }}
 
-  trivy-scan:
-    name: 3. Scan published images
-    runs-on: ubuntu-latest
-    needs: [tag-creation, build-and-push]
-    permissions:
-      contents: read
-      packages: read
-    strategy:
-      fail-fast: false
-      matrix:
-        image_name: [monolito, api, frontend]
-
-    steps:
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.image_name }}:${{ needs.tag-creation.outputs.created_tag }}
-          format: table
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: HIGH,CRITICAL
-
   release-creation:
     name: 4. Create GitHub release
     runs-on: ubuntu-latest
-    needs: [tag-creation, build-and-push, trivy-scan]
+    needs: [tag-creation, build-and-push]
     permissions:
       contents: write
 

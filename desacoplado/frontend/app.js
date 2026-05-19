@@ -272,10 +272,12 @@ function formatDate(value) {
 }
 
 function resolveAPIBase() {
-  const params = new URLSearchParams(window.location.search);
-  const queryValue = params.get("api");
-  if (queryValue) {
-    return stripTrailingSlash(queryValue);
+  if (
+    window.GOTODOLIST_CONFIG &&
+    typeof window.GOTODOLIST_CONFIG.apiBase === "string" &&
+    window.GOTODOLIST_CONFIG.apiBase.trim() !== ""
+  ) {
+    return stripTrailingSlash(window.GOTODOLIST_CONFIG.apiBase);
   }
 
   if (typeof window.GOTODOLIST_API_BASE_URL === "string" && window.GOTODOLIST_API_BASE_URL.trim() !== "") {

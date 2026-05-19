@@ -21,9 +21,7 @@ services:
 
   monolito:
     profiles: ["monolito"]
-    build:
-      context: .
-      dockerfile: monolito/Dockerfile
+    image: ghcr.io/${GHCR_OWNER:-elton-bt}/gotodolist-monolito:${IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       db:
@@ -47,9 +45,7 @@ services:
 
   api:
     profiles: ["desacoplado"]
-    build:
-      context: .
-      dockerfile: desacoplado/backend/Dockerfile
+    image: ghcr.io/${GHCR_OWNER:-elton-bt}/gotodolist-api:${IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       db:
@@ -74,13 +70,13 @@ services:
 
   frontend:
     profiles: ["desacoplado"]
-    build:
-      context: .
-      dockerfile: desacoplado/frontend/Dockerfile
+    image: ghcr.io/${GHCR_OWNER:-elton-bt}/gotodolist-frontend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       api:
         condition: service_healthy
+    environment:
+      GOTODOLIST_API_BASE_URL: ${GOTODOLIST_API_BASE_URL:-}
     ports:
       - "8082:8080"
 

@@ -37,9 +37,9 @@ jobs:
           fi
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v8
         with:
-          version: latest
+          version: v2.12.2
 
       - name: Run Go tests
         run: go test ./...
@@ -55,8 +55,10 @@ jobs:
 
       - name: Validate Compose profiles
         run: |
-          docker compose --profile monolito config >/dev/null
-          docker compose --profile desacoplado config >/dev/null
+          docker compose -f docker-compose-dev.yaml config >/dev/null
+          docker compose -f docker-compose-monolito.yaml config >/dev/null
+          docker compose -f docker-compose-prod.yaml --profile monolito config >/dev/null
+          docker compose -f docker-compose-prod.yaml --profile desacoplado config >/dev/null
 
       - name: Build monolith image
         run: docker build -f monolito/Dockerfile -t gotodolist-monolito:ci .
@@ -66,30 +68,3 @@ jobs:
 
       - name: Build frontend image
         run: docker build -f desacoplado/frontend/Dockerfile -t gotodolist-frontend:ci .
-
-      - name: Scan monolith image with Trivy
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: gotodolist-monolito:ci
-          format: table
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: HIGH,CRITICAL
-
-      - name: Scan API image with Trivy
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: gotodolist-api:ci
-          format: table
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: HIGH,CRITICAL
-
-      - name: Scan frontend image with Trivy
-        uses: aquasecurity/trivy-action@0.33.1
-        with:
-          image-ref: gotodolist-frontend:ci
-          format: table
-          exit-code: '1'
-          ignore-unfixed: true
-          severity: HIGH,CRITICAL
