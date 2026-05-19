@@ -53,8 +53,6 @@ func (s *apiServer) handleListTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *apiServer) handleCreateTask(w http.ResponseWriter, r *http.Request) {
-	defer r.Body.Close()
-
 	var request todo.CreateTaskInput
 	if err := httpx.DecodeJSON(r, &request); err != nil {
 		httpx.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "JSON invalido."})
@@ -77,8 +75,6 @@ func (s *apiServer) handleUpdateTask(w http.ResponseWriter, r *http.Request) {
 		httpx.WriteJSON(w, http.StatusBadRequest, map[string]string{"error": "Identificador invalido."})
 		return
 	}
-
-	defer r.Body.Close()
 
 	var request todo.UpdateTaskInput
 	if err := httpx.DecodeJSON(r, &request); err != nil {
