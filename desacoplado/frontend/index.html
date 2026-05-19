@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gotodolist | Frontend desacoplado</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="background-blur background-blur--left" aria-hidden="true"></div>
+  <div class="background-blur background-blur--right" aria-hidden="true"></div>
+
+  <main class="shell">
+    <section class="hero panel">
+      <div>
+        <p class="eyebrow">frontend desacoplado + fetch api</p>
+        <h1>Quadro visual para testar a API REST do gotodolist.</h1>
+        <p class="hero-copy">
+          Esta interface funciona so com arquivos estaticos, conversa com o backend em Go e ajuda a demonstrar o fluxo completo de CRUD sem autenticao.
+        </p>
+      </div>
+
+      <div class="hero-meta">
+        <div class="status-card">
+          <p class="label">saude da api</p>
+          <p id="health-status" class="status-pill status-pill--unknown">verificando</p>
+        </div>
+
+        <div class="status-card">
+          <p class="label">endpoint alvo</p>
+          <p id="api-base" class="endpoint-text"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid-layout">
+      <section class="panel composer-panel">
+        <div>
+          <p class="eyebrow">nova tarefa</p>
+          <h2>Adicionar atividade</h2>
+        </div>
+
+        <form id="create-form" class="stack-form">
+          <label>
+            <span>Titulo</span>
+            <input id="title-input" type="text" name="title" maxlength="120" placeholder="Ex: revisar compose" required>
+          </label>
+
+          <label>
+            <span>Descricao</span>
+            <textarea id="description-input" name="description" rows="5" placeholder="Contexto, passos ou observacoes para a aula"></textarea>
+          </label>
+
+          <button type="submit">Salvar tarefa</button>
+        </form>
+
+        <p id="feedback" class="feedback" hidden></p>
+      </section>
+
+      <section class="panel board-panel">
+        <div class="board-header">
+          <div>
+            <p class="eyebrow">painel atual</p>
+            <h2>Tarefas sincronizadas</h2>
+          </div>
+
+          <div class="board-tools">
+            <div class="filters" role="tablist" aria-label="Filtrar tarefas">
+              <button type="button" class="filter-button is-active" data-filter="all">Todas</button>
+              <button type="button" class="filter-button" data-filter="pending">Pendentes</button>
+              <button type="button" class="filter-button" data-filter="done">Concluidas</button>
+            </div>
+
+            <p id="task-counter" class="counter">0 tarefa(s)</p>
+          </div>
+        </div>
+
+        <div id="task-list" class="task-list" aria-live="polite"></div>
+        <p id="empty-state" class="empty-state">Nenhuma tarefa encontrada para o filtro atual.</p>
+      </section>
+    </section>
+  </main>
+
+  <template id="task-card-template">
+    <article class="task-card">
+      <div class="task-card__summary">
+        <div>
+          <p class="task-card__status" data-field="status"></p>
+          <h3 data-field="title"></h3>
+        </div>
+
+        <p class="task-card__description" data-field="description"></p>
+        <p class="task-card__meta" data-field="updated-at"></p>
+      </div>
+
+      <div class="task-card__actions">
+        <button type="button" class="secondary-button" data-action="toggle"></button>
+        <button type="button" class="ghost-button" data-action="edit-toggle">Editar</button>
+        <button type="button" class="danger-button" data-action="delete">Excluir</button>
+      </div>
+
+      <form class="edit-form" hidden>
+        <label>
+          <span>Titulo</span>
+          <input type="text" name="title" maxlength="120" required>
+        </label>
+
+        <label>
+          <span>Descricao</span>
+          <textarea name="description" rows="4"></textarea>
+        </label>
+
+        <div class="edit-form__actions">
+          <button type="submit">Salvar alteracoes</button>
+          <button type="button" class="ghost-button" data-action="edit-cancel">Cancelar</button>
+        </div>
+      </form>
+    </article>
+  </template>
+
+  <script src="./app.js" defer></script>
+</body>
+</html>

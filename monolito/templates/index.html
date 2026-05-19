@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gotodolist | Monolito</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <main class="page-shell">
+    <section class="hero">
+      <p class="eyebrow">monolito em go + postgres</p>
+      <h1>Organize aulas, demos e experimentos em um quadro simples.</h1>
+      <p class="hero-copy">Esta versao renderiza HTML no servidor, conversa direto com o banco e foi pensada para deployment didatico em VM ou container.</p>
+    </section>
+
+    <section class="panel panel-form">
+      <div>
+        <p class="panel-kicker">nova tarefa</p>
+        <h2>Registrar atividade</h2>
+      </div>
+      {{ if .Message }}
+        <p class="notice">{{ .Message }}</p>
+      {{ end }}
+      <form method="post" action="/tasks" class="task-form">
+        <label>
+          <span>Titulo</span>
+          <input type="text" name="title" placeholder="Ex: revisar compose" value="{{ .DraftTitle }}" maxlength="120" required>
+        </label>
+        <label>
+          <span>Descricao</span>
+          <textarea name="description" rows="4" placeholder="Contexto para os alunos, passos ou links uteis">{{ .DraftDescription }}</textarea>
+        </label>
+        <button type="submit">Adicionar tarefa</button>
+      </form>
+    </section>
+
+    <section class="panel panel-list">
+      <div class="panel-header">
+        <div>
+          <p class="panel-kicker">tarefas cadastradas</p>
+          <h2>Painel atual</h2>
+        </div>
+        <span class="counter">{{ len .Tasks }} item(ns)</span>
+      </div>
+
+      {{ if .Tasks }}
+        <ul class="task-list">
+          {{ range .Tasks }}
+            <li class="task-card {{ if .Completed }}task-card--done{{ end }}">
+              <div class="task-main">
+                <div>
+                  <p class="task-state">{{ if .Completed }}Concluida{{ else }}Pendente{{ end }}</p>
+                  <h3>{{ .Title }}</h3>
+                </div>
+                <p class="task-description">{{ if .Description }}{{ .Description }}{{ else }}Sem descricao adicional.{{ end }}</p>
+                <p class="task-meta">Atualizada em {{ formatTime .UpdatedAt }}</p>
+              </div>
+
+              <div class="task-actions">
+                <form method="post" action="/tasks/{{ .ID }}/toggle">
+                  <input type="hidden" name="completed" value="{{ if .Completed }}false{{ else }}true{{ end }}">
+                  <button type="submit" class="secondary-action">{{ if .Completed }}Reabrir{{ else }}Concluir{{ end }}</button>
+                </form>
+
+                <details>
+                  <summary>Editar</summary>
+                  <form method="post" action="/tasks/{{ .ID }}/edit" class="edit-form">
+                    <label>
+                      <span>Titulo</span>
+                      <input type="text" name="title" value="{{ .Title }}" maxlength="120" required>
+                    </label>
+                    <label>
+                      <span>Descricao</span>
+                      <textarea name="description" rows="3">{{ .Description }}</textarea>
+                    </label>
+                    <button type="submit">Salvar alteracoes</button>
+                  </form>
+                </details>
+
+                <form method="post" action="/tasks/{{ .ID }}/delete">
+                  <button type="submit" class="danger-action">Excluir</button>
+                </form>
+              </div>
+            </li>
+          {{ end }}
+        </ul>
+      {{ else }}
+        <p class="empty-state">Nenhuma tarefa cadastrada. Use o formulario acima para criar a primeira.</p>
+      {{ end }}
+    </section>
+  </main>
+</body>
+</html>

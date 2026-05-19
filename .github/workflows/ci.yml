@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    name: Lint and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Check Go formatting
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "Files not formatted with gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+
+      - name: Run Go tests
+        run: go test ./...
+
+  container-validation:
+    name: Validate containers
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate Compose profiles
+        run: |
+          docker compose --profile monolito config >/dev/null
+          docker compose --profile desacoplado config >/dev/null
+
+      - name: Build monolith image
+        run: docker build -f monolito/Dockerfile -t gotodolist-monolito:ci .
+
+      - name: Build API image
+        run: docker build -f desacoplado/backend/Dockerfile -t gotodolist-api:ci .
+
+      - name: Build frontend image
+        run: docker build -f desacoplado/frontend/Dockerfile -t gotodolist-frontend:ci .
+
+      - name: Scan monolith image with Trivy
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: gotodolist-monolito:ci
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+
+      - name: Scan API image with Trivy
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: gotodolist-api:ci
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+
+      - name: Scan frontend image with Trivy
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: gotodolist-frontend:ci
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL

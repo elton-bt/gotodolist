@@ -1,0 +1,9 @@
+.git
+.github
+.gitignore
+.env
+.env.*
+README.md
+IDEIA.md
+scripts/
+**/*_test.go
