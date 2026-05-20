@@ -1,4 +1,4 @@
-name: gotodolist
+name: gotodolist-monolito
 
 services:
   db:
@@ -19,40 +19,28 @@ services:
       retries: 10
       start_period: 5s
 
-  api:
-    image: ghcr.io/${GHCR_OWNER:-elton-bt}/gotodolist-api:${IMAGE_TAG:-latest}
+  monolito:
+    image: ghcr.io/${GHCR_OWNER:-elton-bt}/gotodolist-monolito:${IMAGE_TAG:-latest}
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
     environment:
-      APP_PORT: 8081
+      APP_PORT: 8080
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-gotodolist}
       DB_USER: ${DB_USER:-gotodolist}
       DB_PASSWORD: ${DB_PASSWORD:-replace-me}
       DB_SSLMODE: disable
-      CORS_ALLOW_ORIGIN: ${CORS_ALLOW_ORIGIN:-*}
     ports:
-      - "8081:8081"
+      - "8080:8080"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8081/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8080/health"]
       interval: 20s
       timeout: 5s
       retries: 5
       start_period: 15s
-
-  frontend:
-    image: ghcr.io/${GHCR_OWNER:-elton-bt}/gotodolist-frontend:${IMAGE_TAG:-latest}
-    restart: unless-stopped
-    depends_on:
-      api:
-        condition: service_healthy
-    environment:
-      GOTODOLIST_API_BASE_URL: ${GOTODOLIST_API_BASE_URL:-}
-    ports:
-      - "8082:8080"
 
 volumes:
   postgres-data:

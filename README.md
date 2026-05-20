@@ -16,8 +16,10 @@ Aplicacao didatica de lista de tarefas para demonstrar deploy de uma aplicacao w
 ├── internal/
 ├── monolito/
 ├── docker-compose-dev.yaml
-├── docker-compose-monolito.yaml
+├── docker-compose-monolito-dev.yaml
+├── docker-compose-monolito-prod.yaml
 ├── docker-compose-prod.yaml
+├── example.env
 └── .github/workflows/
 ```
 
@@ -42,12 +44,18 @@ git clone https://github.com/elton-bt/gotodolist.git
 cd gotodolist
 ```
 
-3. Escolha um dos modos abaixo.
-
-### Monolito com Docker Compose
+3. Copie o arquivo de exemplo e ajuste as variaveis conforme o ambiente:
 
 ```bash
-docker compose -f docker-compose-monolito.yaml up --build
+cp example.env .env
+```
+
+4. Escolha um dos modos abaixo.
+
+### Monolito com Docker Compose em desenvolvimento
+
+```bash
+docker compose --env-file .env -f docker-compose-monolito-dev.yaml up --build
 ```
 
 Aplicacao: `http://localhost:8080`
@@ -55,24 +63,28 @@ Aplicacao: `http://localhost:8080`
 ### Frontend + API com Docker Compose
 
 ```bash
-docker compose -f docker-compose-dev.yaml up --build
+docker compose --env-file .env -f docker-compose-dev.yaml up --build
 ```
 
 Frontend: `http://localhost:8082`
 
 API: `http://localhost:8081`
 
-Se o frontend precisar apontar para outra API, passe a variavel `GOTODOLIST_API_BASE_URL` com um endereco acessivel pelo navegador:
-
-```bash
-GOTODOLIST_API_BASE_URL=http://192.168.0.20:8081 docker compose -f docker-compose-dev.yaml up --build
-```
+Se o frontend precisar apontar para outra API, ajuste `GOTODOLIST_API_BASE_URL` no arquivo `.env` com um endereco acessivel pelo navegador.
 
 ### Imagens do GHCR em ambiente de deploy
 
 ```bash
-IMAGE_TAG=latest docker compose -f docker-compose-prod.yaml --profile desacoplado up -d
+docker compose --env-file .env -f docker-compose-prod.yaml up -d
 ```
+
+### Monolito com imagem publicada no GHCR
+
+```bash
+docker compose --env-file .env -f docker-compose-monolito-prod.yaml up -d
+```
+
+Os arquivos de producao nao usam mais `profiles`. Cada Compose representa um unico modo de execucao.
 
 ## Documentacao
 

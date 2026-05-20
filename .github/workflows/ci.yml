@@ -53,12 +53,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate Compose profiles
+      - name: Validate Compose files
         run: |
-          docker compose -f docker-compose-dev.yaml config >/dev/null
-          docker compose -f docker-compose-monolito.yaml config >/dev/null
-          docker compose -f docker-compose-prod.yaml --profile monolito config >/dev/null
-          docker compose -f docker-compose-prod.yaml --profile desacoplado config >/dev/null
+          docker compose --env-file example.env -f docker-compose-dev.yaml config >/dev/null
+          docker compose --env-file example.env -f docker-compose-monolito-dev.yaml config >/dev/null
+          docker compose --env-file example.env -f docker-compose-monolito-prod.yaml config >/dev/null
+          docker compose --env-file example.env -f docker-compose-prod.yaml config >/dev/null
 
       - name: Build monolith image
         run: docker build -f monolito/Dockerfile -t gotodolist-monolito:ci .
