@@ -16,7 +16,7 @@ ARG TARGETARCH=amd64
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH \
     go build -trimpath -ldflags="-s -w" -o /out/gotodolist-api ./desacoplado/backend
 
-FROM alpine:3.21 AS runtime
+FROM alpine:3.22.4 AS runtime
 
 RUN addgroup -S app && adduser -S app -G app && apk add --no-cache ca-certificates wget
 
