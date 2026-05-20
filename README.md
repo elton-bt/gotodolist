@@ -58,7 +58,7 @@ cp example.env .env
 docker compose --env-file .env -f docker-compose-monolito-dev.yaml up --build
 ```
 
-Aplicacao: `http://localhost:8080`
+Aplicacao: `http://localhost:8080` por padrao. Ajuste `MONOLITO_HOST_PORT` no `.env` se quiser trocar a porta publicada no host.
 
 ### Frontend + API com Docker Compose
 
@@ -66,11 +66,11 @@ Aplicacao: `http://localhost:8080`
 docker compose --env-file .env -f docker-compose-dev.yaml up --build
 ```
 
-Frontend: `http://localhost:8082`
+Frontend: `http://localhost:8082` por padrao.
 
-API: `http://localhost:8081`
+API: `http://localhost:8081` por padrao.
 
-Se o frontend precisar apontar para outra API, ajuste `GOTODOLIST_API_BASE_URL` no arquivo `.env` com um endereco acessivel pelo navegador.
+Se o frontend precisar apontar para outra API, ou se `API_HOST_PORT` for alterada, ajuste `GOTODOLIST_API_BASE_URL` no arquivo `.env` com um endereco acessivel pelo navegador.
 
 ### Imagens do GHCR em ambiente de deploy
 
