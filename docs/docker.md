@@ -1,17 +1,28 @@
 # Compose e imagens Docker
 
-O repositorio possui tres arquivos Compose com responsabilidades separadas.
+O repositorio possui quatro arquivos Compose com responsabilidades separadas.
 
 ## Arquivos disponiveis
 
-- `docker-compose-monolito.yaml`: banco + monolito com build local.
+- `docker-compose-monolito-dev.yaml`: banco + monolito com build local.
+- `docker-compose-monolito-prod.yaml`: banco + monolito usando imagem publicada no GHCR.
 - `docker-compose-dev.yaml`: banco + API + frontend com build local.
-- `docker-compose-prod.yaml`: monolito ou stack desacoplada usando imagens publicadas no GHCR.
+- `docker-compose-prod.yaml`: banco + API + frontend usando imagens publicadas no GHCR.
+
+## Arquivo de variaveis
+
+Use `example.env` como base para criar o arquivo de variaveis do ambiente:
+
+```bash
+cp example.env .env
+```
+
+Depois suba os servicos sempre com `--env-file .env` para deixar os valores explicitos e repetir o mesmo comando em dev ou deploy.
 
 ## Subindo o monolito localmente
 
 ```bash
-docker compose -f docker-compose-monolito.yaml up --build
+docker compose --env-file .env -f docker-compose-monolito-dev.yaml up --build
 ```
 
 Servicos expostos:
@@ -22,7 +33,7 @@ Servicos expostos:
 ## Subindo a stack desacoplada localmente
 
 ```bash
-docker compose -f docker-compose-dev.yaml up --build
+docker compose --env-file .env -f docker-compose-dev.yaml up --build
 ```
 
 Servicos expostos:
@@ -46,27 +57,33 @@ Servicos expostos:
 Exemplo com API externa ao frontend:
 
 ```bash
-GOTODOLIST_API_BASE_URL=http://192.168.0.20:8081 docker compose -f docker-compose-dev.yaml up --build
+docker compose --env-file .env -f docker-compose-dev.yaml up --build
 ```
 
-Use um endereco que o navegador do usuario consiga resolver. Nome de container so funciona se o navegador tambem enxergar essa rede, o que normalmente nao acontece fora do Docker.
+Use um endereco que o navegador do usuario consiga resolver. Nome de container so funciona se o navegador tambem enxergar essa rede, o que normalmente nao acontece fora do Docker. Para esse caso, ajuste `GOTODOLIST_API_BASE_URL` no `.env`, por exemplo para `http://192.168.0.20:8081`.
 
 ## Subindo imagens publicadas no GHCR
 
 ### Monolito
 
 ```bash
-IMAGE_TAG=latest docker compose -f docker-compose-prod.yaml --profile monolito up -d
+docker compose --env-file .env -f docker-compose-monolito-prod.yaml up -d
 ```
 
 ### Stack desacoplada
 
 ```bash
-IMAGE_TAG=latest docker compose -f docker-compose-prod.yaml --profile desacoplado up -d
+docker compose --env-file .env -f docker-compose-prod.yaml up -d
 ```
 
 ### Usando outro owner no GHCR
 
 ```bash
-GHCR_OWNER=elton-bt IMAGE_TAG=1.2.3 docker compose -f docker-compose-prod.yaml --profile desacoplado up -d
+docker compose --env-file .env -f docker-compose-prod.yaml up -d
 ```
+
+Altere `GHCR_OWNER` e `IMAGE_TAG` dentro do `.env` quando precisar trocar o repositorio ou a versao da imagem.
+
+## Sobre `profiles`
+
+Os arquivos de producao nao usam mais `profiles`. Eles eram necessarios apenas enquanto `docker-compose-prod.yaml` reunia monolito e stack desacoplada no mesmo arquivo. Agora cada Compose define um unico conjunto de servicos, entao basta escolher o arquivo correto.
