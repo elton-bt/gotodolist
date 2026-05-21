@@ -2,8 +2,7 @@ FROM nginxinc/nginx-unprivileged:1.31-alpine
 
 USER root
 
-RUN apk add --no-cache gettext \
-	&& chown -R 101:0 /usr/share/nginx/html
+RUN apk add --no-cache gettext
 
 COPY desacoplado/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 COPY desacoplado/frontend/index.html /usr/share/nginx/html/index.html
@@ -11,6 +10,8 @@ COPY desacoplado/frontend/styles.css /usr/share/nginx/html/styles.css
 COPY desacoplado/frontend/app.js /usr/share/nginx/html/app.js
 COPY desacoplado/frontend/config.js /usr/share/nginx/html/config.js
 COPY desacoplado/frontend/config.js.template /etc/gotodolist/config.js.template
+
+RUN chown -R 101:0 /usr/share/nginx/html
 
 USER 101
 
