@@ -1,4 +1,4 @@
-# Referencia da API
+# Referência da API
 
 ## Endpoints do monolito
 

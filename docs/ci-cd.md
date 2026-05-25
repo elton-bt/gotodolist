@@ -1,6 +1,6 @@
 # CI/CD e releases
 
-O repositorio possui dois workflows principais em GitHub Actions.
+O repositório possui dois workflows principais em GitHub Actions.
 
 ## CI
 
@@ -8,7 +8,7 @@ Arquivo: `.github/workflows/ci.yml`
 
 Responsabilidades:
 
-- validar formatacao com `gofmt`
+- validar formatação com `gofmt`
 - rodar `golangci-lint`
 - rodar `go test ./...`
 - validar os arquivos Compose
@@ -20,14 +20,14 @@ Arquivo: `.github/workflows/publish-docker.yml`
 
 Responsabilidades:
 
-- calcular a proxima versao a partir dos labels do PR
-- validar codigo e Compose antes da release
+- calcular a próxima versão a partir dos labels do PR
+- validar código e Compose antes da release
 - buildar imagens locais para scan
 - rodar Trivy antes do push das imagens
 - publicar imagens no GHCR
 - criar uma release no GitHub
 
-## Labels de versao
+## Labels de versão
 
 - `major`: incrementa major
 - `minor`, `feature` ou `feat`: incrementa minor
