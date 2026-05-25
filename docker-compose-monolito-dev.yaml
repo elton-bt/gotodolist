@@ -12,6 +12,8 @@ services:
       - "${DB_HOST_PORT:-5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app_db
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -38,6 +40,8 @@ services:
       DB_SSLMODE: ${DB_SSLMODE:-disable}
     ports:
       - "${MONOLITO_HOST_PORT:-8080}:8080"
+    networks:
+      - app_db
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8080/health"]
       interval: 20s
@@ -47,3 +51,6 @@ services:
 
 volumes:
   postgres-data:
+
+networks:
+  app_db:

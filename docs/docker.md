@@ -21,6 +21,12 @@ Depois suba os serviços sempre com `--env-file .env` para deixar os valores exp
 
 Os Compose mantém a porta interna padrão de cada serviço e expõem apenas a porta publicada no host via `.env`.
 
+## Redes entre serviços
+
+- Na stack desacoplada, o `frontend` participa apenas da rede `frontend_api` e o `db` participa apenas da rede `api_db`.
+- A `api` fica nas duas redes, fazendo a ponte entre interface web e banco.
+- Nos Compose do monolito, `monolito` e `db` compartilham apenas a rede `app_db`.
+
 ## Subindo o monolito localmente
 
 ```bash
