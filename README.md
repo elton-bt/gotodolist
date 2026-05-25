@@ -1,5 +1,15 @@
 # gotodolist
 
+[![License](https://img.shields.io/github/license/elton-bt/gotodolist?style=flat-square)](LICENSE)
+[![Last commit](https://img.shields.io/github/last-commit/elton-bt/gotodolist?style=flat-square)](https://github.com/elton-bt/gotodolist/commits/main)
+[![Repo size](https://img.shields.io/github/repo-size/elton-bt/gotodolist?style=flat-square)](https://github.com/elton-bt/gotodolist)
+[![Open issues](https://img.shields.io/github/issues/elton-bt/gotodolist?style=flat-square)](https://github.com/elton-bt/gotodolist/issues)
+[![Open pull requests](https://img.shields.io/github/issues-pr/elton-bt/gotodolist?style=flat-square)](https://github.com/elton-bt/gotodolist/pulls)
+[![CI](https://github.com/elton-bt/gotodolist/actions/workflows/ci.yml/badge.svg)](https://github.com/elton-bt/gotodolist/actions/workflows/ci.yml)
+[![Publish Docker](https://github.com/elton-bt/gotodolist/actions/workflows/publish-docker.yml/badge.svg?event=pull_request)](https://github.com/elton-bt/gotodolist/actions/workflows/publish-docker.yml)
+[![Go version](https://img.shields.io/github/go-mod/go-version/elton-bt/gotodolist?style=flat-square)](go.mod)
+[![Latest release](https://img.shields.io/github/v/release/elton-bt/gotodolist?style=flat-square)](https://github.com/elton-bt/gotodolist/releases)
+
 Aplicação didática de lista de tarefas para demonstrar deploy de uma aplicação web em Go com PostgreSQL. O repositório cobre dois cenários:
 
 - `monolito/`: aplicação Go com renderização server-side.
