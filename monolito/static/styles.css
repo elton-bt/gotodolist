@@ -38,11 +38,16 @@ body {
 }
 
 .hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(220px, 320px);
+  gap: 1.5rem;
+  align-items: start;
   padding: 2.5rem;
   margin-bottom: 1.5rem;
 }
 
 .eyebrow,
+.label,
 .panel-kicker,
 .task-state,
 .counter {
@@ -74,6 +79,26 @@ body {
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.6;
+}
+
+.hero-meta {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.status-card {
+  padding: 1rem 1.1rem;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: var(--paper-strong);
+}
+
+.endpoint-text {
+  margin: 0.6rem 0 0;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 0.94rem;
+  color: var(--accent-deep);
+  word-break: break-word;
 }
 
 .panel {
@@ -227,6 +252,10 @@ details[open] summary {
   .page-shell {
     width: min(100% - 1.2rem, 100%);
     padding-top: 1rem;
+  }
+
+  .hero {
+	grid-template-columns: 1fr;
   }
 
   .hero,

@@ -1,5 +1,8 @@
 FROM nginxinc/nginx-unprivileged:1.31-alpine
 
+ARG APP_VERSION=dev
+ENV GOTODOLIST_APP_VERSION=${APP_VERSION}
+
 USER root
 
 RUN apk add --no-cache gettext
@@ -17,4 +20,4 @@ USER 101
 
 EXPOSE 8080
 
-CMD ["/bin/sh", "-c", "export GOTODOLIST_API_BASE_URL=\"${GOTODOLIST_API_BASE_URL:-${FRONTEND_API_BASE_URL:-}}\" && envsubst '$GOTODOLIST_API_BASE_URL' < /etc/gotodolist/config.js.template > /usr/share/nginx/html/config.js && exec nginx -g 'daemon off;'"]
+CMD ["/bin/sh", "-c", "export GOTODOLIST_API_BASE_URL=\"${GOTODOLIST_API_BASE_URL:-${FRONTEND_API_BASE_URL:-}}\" && envsubst '$GOTODOLIST_API_BASE_URL $GOTODOLIST_APP_VERSION' < /etc/gotodolist/config.js.template > /usr/share/nginx/html/config.js && exec nginx -g 'daemon off;'"]

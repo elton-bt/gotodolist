@@ -23,6 +23,8 @@ services:
     build:
       context: .
       dockerfile: monolito/Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
     restart: unless-stopped
     depends_on:
       db:

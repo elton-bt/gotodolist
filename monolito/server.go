@@ -21,15 +21,17 @@ type pageData struct {
 	Message          string
 	DraftTitle       string
 	DraftDescription string
+	Version          string
 }
 
 type server struct {
 	templates *template.Template
 	service   *todo.Service
+	version   string
 }
 
 func newHTTPServer(cfg config.Config, service *todo.Service) (*http.Server, error) {
-	handler, err := newHandler(service)
+	handler, err := newHandler(cfg, service)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +45,7 @@ func newHTTPServer(cfg config.Config, service *todo.Service) (*http.Server, erro
 	}, nil
 }
 
-func newHandler(service *todo.Service) (http.Handler, error) {
+func newHandler(cfg config.Config, service *todo.Service) (http.Handler, error) {
 	templates, err := template.New("index.html").Funcs(template.FuncMap{
 		"formatTime": func(value time.Time) string {
 			if value.IsZero() {
@@ -65,6 +67,7 @@ func newHandler(service *todo.Service) (http.Handler, error) {
 	server := &server{
 		templates: templates,
 		service:   service,
+		version:   cfg.Version,
 	}
 
 	mux := http.NewServeMux()
@@ -209,6 +212,7 @@ func (s *server) renderPage(w http.ResponseWriter, r *http.Request, status int, 
 }
 
 func (s *server) renderIndex(w http.ResponseWriter, status int, data pageData) {
+	data.Version = s.version
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 	if err := s.templates.ExecuteTemplate(w, "index.html", data); err != nil {

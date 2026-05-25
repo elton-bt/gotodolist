@@ -9,9 +9,18 @@
 <body>
   <main class="page-shell">
     <section class="hero">
-      <p class="eyebrow">monolito em go + postgres</p>
-      <h1>GoToDoList</h1>
-      <p class="hero-copy">Esta versão renderiza HTML no servidor, conversa direto com o banco e foi pensada para deployment didático em VM ou container.</p>
+      <div class="hero-content">
+        <p class="eyebrow">monolito em go + postgres</p>
+        <h1>GoToDoList</h1>
+        <p class="hero-copy">Esta versão renderiza HTML no servidor, conversa direto com o banco e foi pensada para deployment didático em VM ou container.</p>
+      </div>
+
+      <div class="hero-meta">
+        <div class="status-card">
+          <p class="label">versão em execução</p>
+          <p class="endpoint-text">{{ .Version }}</p>
+        </div>
+      </div>
     </section>
 
     <section class="panel panel-form">

@@ -175,6 +175,8 @@ jobs:
         with:
           context: .
           file: ${{ matrix.dockerfile }}
+          build-args: |
+            APP_VERSION=${{ needs.tag-creation.outputs.created_tag }}
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |

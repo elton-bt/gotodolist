@@ -1,5 +1,6 @@
 const state = {
   apiBase: resolveAPIBase(),
+  version: resolveAppVersion(),
   tasks: [],
   filter: "all",
   editingID: null,
@@ -8,6 +9,7 @@ const state = {
 
 const refs = {
   apiBase: document.querySelector("#api-base"),
+  appVersion: document.querySelector("#app-version"),
   createForm: document.querySelector("#create-form"),
   descriptionInput: document.querySelector("#description-input"),
   emptyState: document.querySelector("#empty-state"),
@@ -21,6 +23,7 @@ const refs = {
 };
 
 refs.apiBase.textContent = state.apiBase;
+refs.appVersion.textContent = state.version;
 bindEvents();
 void refreshAll();
 window.setInterval(() => {
@@ -290,6 +293,22 @@ function resolveAPIBase() {
   }
 
   return `${protocol}//${hostname}:8081`;
+}
+
+function resolveAppVersion() {
+  if (
+    window.GOTODOLIST_CONFIG &&
+    typeof window.GOTODOLIST_CONFIG.version === "string" &&
+    window.GOTODOLIST_CONFIG.version.trim() !== ""
+  ) {
+    return window.GOTODOLIST_CONFIG.version.trim();
+  }
+
+  if (typeof window.GOTODOLIST_APP_VERSION === "string" && window.GOTODOLIST_APP_VERSION.trim() !== "") {
+    return window.GOTODOLIST_APP_VERSION.trim();
+  }
+
+  return "dev";
 }
 
 function stripTrailingSlash(value) {
