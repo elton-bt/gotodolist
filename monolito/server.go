@@ -22,12 +22,16 @@ type pageData struct {
 	DraftTitle       string
 	DraftDescription string
 	Version          string
+	InstanceName     string
+	InstanceIP       string
 }
 
 type server struct {
 	templates *template.Template
 	service   *todo.Service
 	version   string
+	instance  string
+	ip        string
 }
 
 func newHTTPServer(cfg config.Config, service *todo.Service) (*http.Server, error) {
@@ -68,6 +72,8 @@ func newHandler(cfg config.Config, service *todo.Service) (http.Handler, error) 
 		templates: templates,
 		service:   service,
 		version:   cfg.Version,
+		instance:  fallbackValue(cfg.InstanceName, "indisponivel"),
+		ip:        fallbackValue(cfg.InstanceIP, "indisponivel"),
 	}
 
 	mux := http.NewServeMux()
@@ -213,11 +219,21 @@ func (s *server) renderPage(w http.ResponseWriter, r *http.Request, status int, 
 
 func (s *server) renderIndex(w http.ResponseWriter, status int, data pageData) {
 	data.Version = s.version
+	data.InstanceName = s.instance
+	data.InstanceIP = s.ip
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 	if err := s.templates.ExecuteTemplate(w, "index.html", data); err != nil {
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 	}
+}
+
+func fallbackValue(value, fallback string) string {
+	if value == "" {
+		return fallback
+	}
+
+	return value
 }
 
 func parseID(raw string) (int64, bool) {

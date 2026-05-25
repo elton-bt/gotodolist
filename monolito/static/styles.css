@@ -101,6 +101,14 @@ body {
   word-break: break-word;
 }
 
+.meta-detail {
+  margin: 0.35rem 0 0;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 0.82rem;
+  color: var(--muted);
+  word-break: break-word;
+}
+
 .panel {
   padding: 1.6rem;
   margin-bottom: 1.5rem;

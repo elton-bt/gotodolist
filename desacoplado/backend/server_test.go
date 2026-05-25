@@ -14,7 +14,7 @@ import (
 func TestCRUDEndpoints(t *testing.T) {
 	store := todo.NewMemoryStore()
 	service := todo.NewService(store)
-	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3"}, service)
+	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3", InstanceName: "api-01", InstanceIP: "10.20.30.41"}, service)
 
 	createBody := bytes.NewBufferString(`{"title":"Preparar aula","description":"Subir ambiente com compose"}`)
 	createRequest := httptest.NewRequest(http.MethodPost, "/api/tasks", createBody)
@@ -24,6 +24,12 @@ func TestCRUDEndpoints(t *testing.T) {
 
 	if createResponse.Code != http.StatusCreated {
 		t.Fatalf("expected status %d, got %d", http.StatusCreated, createResponse.Code)
+	}
+	if createResponse.Header().Get("X-GoToDoList-Instance") != "api-01" {
+		t.Fatalf("expected instance header on create response")
+	}
+	if createResponse.Header().Get("X-GoToDoList-IP") != "10.20.30.41" {
+		t.Fatalf("expected IP header on create response")
 	}
 
 	var created todo.Task
@@ -79,6 +85,9 @@ func TestCRUDEndpoints(t *testing.T) {
 	if deleteResponse.Code != http.StatusNoContent {
 		t.Fatalf("expected status %d, got %d", http.StatusNoContent, deleteResponse.Code)
 	}
+	if deleteResponse.Header().Get("Access-Control-Expose-Headers") != "X-GoToDoList-Instance, X-GoToDoList-IP" {
+		t.Fatalf("expected exposed instance headers on delete response")
+	}
 
 	finalListRequest := httptest.NewRequest(http.MethodGet, "/api/tasks", nil)
 	finalListResponse := httptest.NewRecorder()
@@ -99,7 +108,7 @@ func TestCRUDEndpoints(t *testing.T) {
 func TestRootEndpointReturnsServiceMetadata(t *testing.T) {
 	store := todo.NewMemoryStore()
 	service := todo.NewService(store)
-	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3"}, service)
+	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3", InstanceName: "api-01", InstanceIP: "10.20.30.41"}, service)
 
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	response := httptest.NewRecorder()
@@ -111,11 +120,13 @@ func TestRootEndpointReturnsServiceMetadata(t *testing.T) {
 	}
 
 	var payload struct {
-		Service string `json:"service"`
-		Status  string `json:"status"`
-		Version string `json:"versao"`
-		Health  string `json:"health"`
-		Tasks   string `json:"tasks"`
+		Service  string `json:"service"`
+		Status   string `json:"status"`
+		Version  string `json:"versao"`
+		Instance string `json:"instancia"`
+		IP       string `json:"ip"`
+		Health   string `json:"health"`
+		Tasks    string `json:"tasks"`
 	}
 	if err := json.Unmarshal(response.Body.Bytes(), &payload); err != nil {
 		t.Fatalf("unmarshal root response: %v", err)
@@ -130,6 +141,12 @@ func TestRootEndpointReturnsServiceMetadata(t *testing.T) {
 	if payload.Version != "1.2.3" {
 		t.Fatalf("expected version 1.2.3, got %q", payload.Version)
 	}
+	if payload.Instance != "api-01" {
+		t.Fatalf("expected instance api-01, got %q", payload.Instance)
+	}
+	if payload.IP != "10.20.30.41" {
+		t.Fatalf("expected IP 10.20.30.41, got %q", payload.IP)
+	}
 	if payload.Health != "/health" {
 		t.Fatalf("expected health endpoint /health, got %q", payload.Health)
 	}
@@ -142,7 +159,7 @@ func TestHealthEndpointReturnsDegraded(t *testing.T) {
 	store := todo.NewMemoryStore()
 	store.SetHealth(todo.ErrUnavailable)
 	service := todo.NewService(store)
-	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3"}, service)
+	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3", InstanceName: "api-01", InstanceIP: "10.20.30.41"}, service)
 
 	request := httptest.NewRequest(http.MethodGet, "/health", nil)
 	response := httptest.NewRecorder()
@@ -151,13 +168,16 @@ func TestHealthEndpointReturnsDegraded(t *testing.T) {
 	if response.Code != http.StatusServiceUnavailable {
 		t.Fatalf("expected status %d, got %d", http.StatusServiceUnavailable, response.Code)
 	}
+	if response.Header().Get("X-GoToDoList-Instance") != "api-01" {
+		t.Fatalf("expected instance header on health response")
+	}
 }
 
 func TestRootEndpointReturnsDegradedStatus(t *testing.T) {
 	store := todo.NewMemoryStore()
 	store.SetHealth(todo.ErrUnavailable)
 	service := todo.NewService(store)
-	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3"}, service)
+	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3", InstanceName: "api-01", InstanceIP: "10.20.30.41"}, service)
 
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	response := httptest.NewRecorder()

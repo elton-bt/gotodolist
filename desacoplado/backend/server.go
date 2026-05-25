@@ -14,6 +14,8 @@ type apiServer struct {
 	allowOriginHost string
 	appName         string
 	version         string
+	instanceName    string
+	instanceIP      string
 }
 
 func newHTTPServer(cfg config.Config, service *todo.Service) *http.Server {
@@ -42,6 +44,8 @@ func newHandler(cfg config.Config, service *todo.Service) http.Handler {
 		allowOriginHost: cfg.CORSAllowOrigin,
 		appName:         appName,
 		version:         version,
+		instanceName:    fallbackValue(cfg.InstanceName, "indisponivel"),
+		instanceIP:      fallbackValue(cfg.InstanceIP, "indisponivel"),
 	}
 
 	mux := http.NewServeMux()
@@ -57,11 +61,13 @@ func newHandler(cfg config.Config, service *todo.Service) http.Handler {
 
 func (s *apiServer) handleInfo(w http.ResponseWriter, r *http.Request) {
 	payload := map[string]string{
-		"service": s.appName,
-		"status":  "ok",
-		"versao":  s.version,
-		"health":  "/health",
-		"tasks":   "/api/tasks",
+		"service":   s.appName,
+		"status":    "ok",
+		"versao":    s.version,
+		"instancia": s.instanceName,
+		"ip":        s.instanceIP,
+		"health":    "/health",
+		"tasks":     "/api/tasks",
 	}
 
 	if err := s.service.Health(r.Context()); err != nil {
@@ -173,6 +179,9 @@ func (s *apiServer) withCORS(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Origin", allowOrigin)
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 		w.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+		w.Header().Set("Access-Control-Expose-Headers", "X-GoToDoList-Instance, X-GoToDoList-IP")
+		w.Header().Set("X-GoToDoList-Instance", s.instanceName)
+		w.Header().Set("X-GoToDoList-IP", s.instanceIP)
 
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
@@ -181,6 +190,14 @@ func (s *apiServer) withCORS(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r)
 	})
+}
+
+func fallbackValue(value, fallback string) string {
+	if value == "" {
+		return fallback
+	}
+
+	return value
 }
 
 func parseID(raw string) (int64, bool) {

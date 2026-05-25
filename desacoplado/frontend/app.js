@@ -1,6 +1,10 @@
 const state = {
   apiBase: resolveAPIBase(),
   version: resolveAppVersion(),
+  frontendInstance: "carregando",
+  frontendIP: "carregando",
+  apiInstance: "aguardando resposta",
+  apiIP: "aguardando",
   tasks: [],
   filter: "all",
   editingID: null,
@@ -9,11 +13,15 @@ const state = {
 
 const refs = {
   apiBase: document.querySelector("#api-base"),
+  apiInstance: document.querySelector("#api-instance"),
+  apiIP: document.querySelector("#api-ip"),
   appVersion: document.querySelector("#app-version"),
   createForm: document.querySelector("#create-form"),
   descriptionInput: document.querySelector("#description-input"),
   emptyState: document.querySelector("#empty-state"),
   feedback: document.querySelector("#feedback"),
+  frontendInstance: document.querySelector("#frontend-instance"),
+  frontendIP: document.querySelector("#frontend-ip"),
   healthStatus: document.querySelector("#health-status"),
   taskCardTemplate: document.querySelector("#task-card-template"),
   taskCounter: document.querySelector("#task-counter"),
@@ -24,10 +32,12 @@ const refs = {
 
 refs.apiBase.textContent = state.apiBase;
 refs.appVersion.textContent = state.version;
+setIdentityCard(refs.frontendInstance, refs.frontendIP, state.frontendInstance, state.frontendIP);
+setIdentityCard(refs.apiInstance, refs.apiIP, state.apiInstance, state.apiIP);
 bindEvents();
 void refreshAll();
 window.setInterval(() => {
-  void refreshHealth();
+  void Promise.all([refreshFrontendInfo(), refreshHealth()]);
 }, 30000);
 
 function bindEvents() {
@@ -62,12 +72,24 @@ function bindEvents() {
 }
 
 async function refreshAll() {
-  await Promise.all([refreshHealth(), refreshTasks()]);
+  await Promise.all([refreshFrontendInfo(), refreshHealth(), refreshTasks()]);
+}
+
+async function refreshFrontendInfo() {
+  try {
+    const response = await fetch("/health", {
+      cache: "no-store",
+    });
+
+    applyFrontendIdentity(response.headers);
+  } catch {
+    setIdentityCard(refs.frontendInstance, refs.frontendIP, "indisponivel", "indisponivel");
+  }
 }
 
 async function refreshHealth() {
   try {
-    await apiRequest("/health");
+    await apiRequest("/health", { cache: "no-store" });
     setHealthStatus("ok", "status-pill--ok");
   } catch (error) {
     setHealthStatus(error.message || "degradado", "status-pill--degraded");
@@ -199,6 +221,8 @@ async function apiRequest(pathname, options = {}) {
     ...options,
   });
 
+  applyAPIIdentity(response.headers);
+
   const contentType = response.headers.get("content-type") || "";
   const isJSON = contentType.includes("application/json");
   const payload = isJSON ? await response.json() : null;
@@ -256,6 +280,37 @@ function setFeedback(message, success) {
 function setHealthStatus(message, className) {
   refs.healthStatus.textContent = message;
   refs.healthStatus.className = `status-pill ${className}`;
+}
+
+function applyFrontendIdentity(headers) {
+  const instance = headers.get("X-GoToDoList-Frontend-Instance");
+  const ip = headers.get("X-GoToDoList-Frontend-IP");
+
+  if (!instance && !ip) {
+    return;
+  }
+
+  state.frontendInstance = instance || state.frontendInstance;
+  state.frontendIP = ip || state.frontendIP;
+  setIdentityCard(refs.frontendInstance, refs.frontendIP, state.frontendInstance, state.frontendIP);
+}
+
+function applyAPIIdentity(headers) {
+  const instance = headers.get("X-GoToDoList-Instance");
+  const ip = headers.get("X-GoToDoList-IP");
+
+  if (!instance && !ip) {
+    return;
+  }
+
+  state.apiInstance = instance || state.apiInstance;
+  state.apiIP = ip || state.apiIP;
+  setIdentityCard(refs.apiInstance, refs.apiIP, state.apiInstance, state.apiIP);
+}
+
+function setIdentityCard(instanceElement, ipElement, instance, ip) {
+  instanceElement.textContent = instance;
+  ipElement.textContent = `IP ${ip}`;
 }
 
 function formatDate(value) {
