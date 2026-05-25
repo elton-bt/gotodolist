@@ -14,6 +14,8 @@ var version = "dev"
 type Config struct {
 	AppName           string
 	Version           string
+	InstanceName      string
+	InstanceIP        string
 	Port              string
 	DBHost            string
 	DBPort            int
@@ -57,6 +59,8 @@ func Load(appName, defaultPort string) (Config, error) {
 	return Config{
 		AppName:           appName,
 		Version:           Version(),
+		InstanceName:      resolveInstanceName(),
+		InstanceIP:        resolveInstanceIP(),
 		Port:              envString("APP_PORT", defaultPort),
 		DBHost:            envString("DB_HOST", "localhost"),
 		DBPort:            dbPort,
@@ -86,6 +90,60 @@ func Version() string {
 	}
 
 	return version
+}
+
+func resolveInstanceName() string {
+	hostname, err := os.Hostname()
+	if err != nil || hostname == "" {
+		return "indisponivel"
+	}
+
+	return hostname
+}
+
+func resolveInstanceIP() string {
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "indisponivel"
+	}
+
+	if ip := firstNonLoopbackIP(addrs); ip != "" {
+		return ip
+	}
+
+	return "indisponivel"
+}
+
+func firstNonLoopbackIP(addrs []net.Addr) string {
+	var ipv6Fallback string
+
+	for _, addr := range addrs {
+		ip := addrIP(addr)
+		if ip == nil || ip.IsLoopback() {
+			continue
+		}
+
+		if ipv4 := ip.To4(); ipv4 != nil {
+			return ipv4.String()
+		}
+
+		if ipv6Fallback == "" {
+			ipv6Fallback = ip.String()
+		}
+	}
+
+	return ipv6Fallback
+}
+
+func addrIP(addr net.Addr) net.IP {
+	switch value := addr.(type) {
+	case *net.IPNet:
+		return value.IP
+	case *net.IPAddr:
+		return value.IP
+	default:
+		return nil
+	}
 }
 
 func (c Config) Address() string {

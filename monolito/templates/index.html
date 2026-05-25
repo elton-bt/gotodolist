@@ -20,6 +20,12 @@
           <p class="label">versão em execução</p>
           <p class="endpoint-text">{{ .Version }}</p>
         </div>
+
+        <div class="status-card">
+          <p class="label">instância atendente</p>
+          <p class="endpoint-text">{{ .InstanceName }}</p>
+          <p class="meta-detail">IP {{ .InstanceIP }}</p>
+        </div>
       </div>
     </section>
 

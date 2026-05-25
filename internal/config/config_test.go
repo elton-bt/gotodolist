@@ -1,6 +1,9 @@
 package config
 
-import "testing"
+import (
+	"net"
+	"testing"
+)
 
 func TestVersionUsesRuntimeEnvWhenBuildVersionIsDefault(t *testing.T) {
 	originalVersion := version
@@ -41,5 +44,28 @@ func TestVersionFallsBackToDevWhenUnset(t *testing.T) {
 
 	if got := Version(); got != "dev" {
 		t.Fatalf("expected dev fallback, got %q", got)
+	}
+}
+
+func TestFirstNonLoopbackIPPrefersIPv4(t *testing.T) {
+	addrs := []net.Addr{
+		&net.IPNet{IP: net.ParseIP("127.0.0.1")},
+		&net.IPNet{IP: net.ParseIP("fd00::10")},
+		&net.IPNet{IP: net.ParseIP("10.42.0.15")},
+	}
+
+	if got := firstNonLoopbackIP(addrs); got != "10.42.0.15" {
+		t.Fatalf("expected IPv4 address to be preferred, got %q", got)
+	}
+}
+
+func TestFirstNonLoopbackIPFallsBackToIPv6(t *testing.T) {
+	addrs := []net.Addr{
+		&net.IPNet{IP: net.ParseIP("127.0.0.1")},
+		&net.IPNet{IP: net.ParseIP("fd00::10")},
+	}
+
+	if got := firstNonLoopbackIP(addrs); got != "fd00::10" {
+		t.Fatalf("expected IPv6 fallback, got %q", got)
 	}
 }

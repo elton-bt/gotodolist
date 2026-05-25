@@ -13,7 +13,7 @@ import (
 
 func TestMonolithCRUDFlow(t *testing.T) {
 	service := todo.NewService(todo.NewMemoryStore())
-	handler, err := newHandler(config.Config{Version: "1.2.3"}, service)
+	handler, err := newHandler(config.Config{Version: "1.2.3", InstanceName: "vm-aula-01", InstanceIP: "10.20.30.40"}, service)
 	if err != nil {
 		t.Fatalf("newHandler returned error: %v", err)
 	}
@@ -41,6 +41,12 @@ func TestMonolithCRUDFlow(t *testing.T) {
 	}
 	if !strings.Contains(listResponse.Body.String(), "1.2.3") {
 		t.Fatalf("expected rendered page to contain application version")
+	}
+	if !strings.Contains(listResponse.Body.String(), "vm-aula-01") {
+		t.Fatalf("expected rendered page to contain instance hostname")
+	}
+	if !strings.Contains(listResponse.Body.String(), "10.20.30.40") {
+		t.Fatalf("expected rendered page to contain instance IP")
 	}
 
 	updateRequest := httptest.NewRequest(http.MethodPost, "/tasks/1/edit", strings.NewReader(url.Values{
@@ -101,7 +107,7 @@ func TestMonolithHealthEndpointReturnsDegraded(t *testing.T) {
 	store.SetHealth(todo.ErrUnavailable)
 
 	service := todo.NewService(store)
-	handler, err := newHandler(config.Config{Version: "1.2.3"}, service)
+	handler, err := newHandler(config.Config{Version: "1.2.3", InstanceName: "vm-aula-01", InstanceIP: "10.20.30.40"}, service)
 	if err != nil {
 		t.Fatalf("newHandler returned error: %v", err)
 	}
