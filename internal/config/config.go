@@ -9,8 +9,11 @@ import (
 	"time"
 )
 
+var version = "dev"
+
 type Config struct {
 	AppName           string
+	Version           string
 	Port              string
 	DBHost            string
 	DBPort            int
@@ -53,6 +56,7 @@ func Load(appName, defaultPort string) (Config, error) {
 
 	return Config{
 		AppName:           appName,
+		Version:           Version(),
 		Port:              envString("APP_PORT", defaultPort),
 		DBHost:            envString("DB_HOST", "localhost"),
 		DBPort:            dbPort,
@@ -66,6 +70,14 @@ func Load(appName, defaultPort string) (Config, error) {
 		WriteTimeout:      writeTimeout,
 		ShutdownTimeout:   shutdownTimeout,
 	}, nil
+}
+
+func Version() string {
+	if version == "" {
+		return "dev"
+	}
+
+	return version
 }
 
 func (c Config) Address() string {

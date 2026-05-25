@@ -1,3 +1,4 @@
 window.GOTODOLIST_CONFIG = {
   apiBase: "${GOTODOLIST_API_BASE_URL}",
+  version: "${GOTODOLIST_APP_VERSION}",
 };

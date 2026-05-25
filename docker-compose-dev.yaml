@@ -23,6 +23,8 @@ services:
     build:
       context: .
       dockerfile: desacoplado/backend/Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
     restart: unless-stopped
     depends_on:
       db:
@@ -48,6 +50,8 @@ services:
     build:
       context: .
       dockerfile: desacoplado/frontend/Dockerfile
+      args:
+        APP_VERSION: ${APP_VERSION:-dev}
     restart: unless-stopped
     depends_on:
       api:

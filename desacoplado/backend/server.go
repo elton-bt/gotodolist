@@ -12,6 +12,8 @@ import (
 type apiServer struct {
 	service         *todo.Service
 	allowOriginHost string
+	appName         string
+	version         string
 }
 
 func newHTTPServer(cfg config.Config, service *todo.Service) *http.Server {
@@ -25,12 +27,25 @@ func newHTTPServer(cfg config.Config, service *todo.Service) *http.Server {
 }
 
 func newHandler(cfg config.Config, service *todo.Service) http.Handler {
+	appName := cfg.AppName
+	if appName == "" {
+		appName = "gotodolist-api"
+	}
+
+	version := cfg.Version
+	if version == "" {
+		version = config.Version()
+	}
+
 	server := &apiServer{
 		service:         service,
 		allowOriginHost: cfg.CORSAllowOrigin,
+		appName:         appName,
+		version:         version,
 	}
 
 	mux := http.NewServeMux()
+	mux.Handle("GET /", http.HandlerFunc(server.handleInfo))
 	mux.Handle("GET /api/tasks", http.HandlerFunc(server.handleListTasks))
 	mux.Handle("POST /api/tasks", http.HandlerFunc(server.handleCreateTask))
 	mux.Handle("PUT /api/tasks/{id}", http.HandlerFunc(server.handleUpdateTask))
@@ -38,6 +53,24 @@ func newHandler(cfg config.Config, service *todo.Service) http.Handler {
 	mux.Handle("GET /health", http.HandlerFunc(server.handleHealth))
 
 	return server.withCORS(mux)
+}
+
+func (s *apiServer) handleInfo(w http.ResponseWriter, r *http.Request) {
+	payload := map[string]string{
+		"service": s.appName,
+		"status":  "ok",
+		"versao":  s.version,
+		"health":  "/health",
+		"tasks":   "/api/tasks",
+	}
+
+	if err := s.service.Health(r.Context()); err != nil {
+		payload["status"] = "degraded"
+		httpx.WriteJSON(w, http.StatusServiceUnavailable, payload)
+		return
+	}
+
+	httpx.WriteJSON(w, http.StatusOK, payload)
 }
 
 func (s *apiServer) handleListTasks(w http.ResponseWriter, r *http.Request) {

@@ -14,7 +14,7 @@ import (
 func TestCRUDEndpoints(t *testing.T) {
 	store := todo.NewMemoryStore()
 	service := todo.NewService(store)
-	handler := newHandler(config.Config{CORSAllowOrigin: "*"}, service)
+	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3"}, service)
 
 	createBody := bytes.NewBufferString(`{"title":"Preparar aula","description":"Subir ambiente com compose"}`)
 	createRequest := httptest.NewRequest(http.MethodPost, "/api/tasks", createBody)
@@ -96,11 +96,53 @@ func TestCRUDEndpoints(t *testing.T) {
 	}
 }
 
+func TestRootEndpointReturnsServiceMetadata(t *testing.T) {
+	store := todo.NewMemoryStore()
+	service := todo.NewService(store)
+	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3"}, service)
+
+	request := httptest.NewRequest(http.MethodGet, "/", nil)
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		fatalf := t.Fatalf
+		fatalf("expected status %d, got %d", http.StatusOK, response.Code)
+	}
+
+	var payload struct {
+		Service string `json:"service"`
+		Status  string `json:"status"`
+		Version string `json:"versao"`
+		Health  string `json:"health"`
+		Tasks   string `json:"tasks"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("unmarshal root response: %v", err)
+	}
+
+	if payload.Service != "gotodolist-api" {
+		t.Fatalf("expected service gotodolist-api, got %q", payload.Service)
+	}
+	if payload.Status != "ok" {
+		t.Fatalf("expected status ok, got %q", payload.Status)
+	}
+	if payload.Version != "1.2.3" {
+		t.Fatalf("expected version 1.2.3, got %q", payload.Version)
+	}
+	if payload.Health != "/health" {
+		t.Fatalf("expected health endpoint /health, got %q", payload.Health)
+	}
+	if payload.Tasks != "/api/tasks" {
+		t.Fatalf("expected tasks endpoint /api/tasks, got %q", payload.Tasks)
+	}
+}
+
 func TestHealthEndpointReturnsDegraded(t *testing.T) {
 	store := todo.NewMemoryStore()
 	store.SetHealth(todo.ErrUnavailable)
 	service := todo.NewService(store)
-	handler := newHandler(config.Config{CORSAllowOrigin: "*"}, service)
+	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3"}, service)
 
 	request := httptest.NewRequest(http.MethodGet, "/health", nil)
 	response := httptest.NewRecorder()
@@ -108,5 +150,31 @@ func TestHealthEndpointReturnsDegraded(t *testing.T) {
 
 	if response.Code != http.StatusServiceUnavailable {
 		t.Fatalf("expected status %d, got %d", http.StatusServiceUnavailable, response.Code)
+	}
+}
+
+func TestRootEndpointReturnsDegradedStatus(t *testing.T) {
+	store := todo.NewMemoryStore()
+	store.SetHealth(todo.ErrUnavailable)
+	service := todo.NewService(store)
+	handler := newHandler(config.Config{CORSAllowOrigin: "*", AppName: "gotodolist-api", Version: "1.2.3"}, service)
+
+	request := httptest.NewRequest(http.MethodGet, "/", nil)
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+
+	if response.Code != http.StatusServiceUnavailable {
+		t.Fatalf("expected status %d, got %d", http.StatusServiceUnavailable, response.Code)
+	}
+
+	var payload struct {
+		Status string `json:"status"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &payload); err != nil {
+		t.Fatalf("unmarshal degraded root response: %v", err)
+	}
+
+	if payload.Status != "degraded" {
+		t.Fatalf("expected status degraded, got %q", payload.Status)
 	}
 }
