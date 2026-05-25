@@ -73,6 +73,14 @@ func Load(appName, defaultPort string) (Config, error) {
 }
 
 func Version() string {
+	if version != "" && version != "dev" {
+		return version
+	}
+
+	if envVersion := envString("APP_VERSION", ""); envVersion != "" {
+		return envVersion
+	}
+
 	if version == "" {
 		return "dev"
 	}

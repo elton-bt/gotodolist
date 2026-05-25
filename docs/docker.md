@@ -59,7 +59,7 @@ Serviços expostos:
 | `FRONTEND_HOST_PORT` | Porta publicada do frontend no host |
 | `CORS_ALLOW_ORIGIN` | Origem permitida pela API |
 | `GOTODOLIST_API_BASE_URL` | Endereco da API usado pelo frontend |
-| `APP_VERSION` | Versão exibida apenas nos Compose com build local (`up --build`) |
+| `APP_VERSION` | Versao exibida em execucao local via `go run` e nos Compose com build local (`up --build`) |
 | `GHCR_OWNER` | Dono das imagens no GHCR |
 | `IMAGE_TAG` | Tag das imagens publicadas |
 
@@ -93,7 +93,7 @@ docker compose --env-file .env -f docker-compose-prod.yaml up -d
 
 Altere `GHCR_OWNER` e `IMAGE_TAG` dentro do `.env` quando precisar trocar o repositório ou a versão da imagem.
 
-Nos Compose com build local, executados com `docker compose ... up --build`, a versão mostrada na interface e no backend raiz vem de `APP_VERSION`.
+Em execucao local via `go run` e nos Compose com build local, executados com `docker compose ... up --build`, a versao mostrada na interface e no backend raiz vem de `APP_VERSION`.
 
 Nos Compose de producao, que usam imagens publicadas no GHCR, `APP_VERSION` e ignorada. Nesses casos, a versao exibida ja vem embutida na imagem e acompanha a tag escolhida em `IMAGE_TAG`, que o workflow de release grava no build automaticamente.
 
