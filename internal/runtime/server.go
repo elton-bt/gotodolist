@@ -3,6 +3,7 @@ package runtime
 import (
 	"context"
 	"errors"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -10,11 +11,16 @@ import (
 	"time"
 )
 
-func Run(server *http.Server, shutdownTimeout time.Duration) error {
+func Run(server *http.Server, shutdownTimeout time.Duration, onReady func(addr string)) error {
+	listener, err := net.Listen("tcp", listenAddress(server))
+	if err != nil {
+		return err
+	}
+
 	errCh := make(chan error, 1)
 
 	go func() {
-		err := server.ListenAndServe()
+		err := server.Serve(listener)
 		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errCh <- err
 			return
@@ -22,6 +28,10 @@ func Run(server *http.Server, shutdownTimeout time.Duration) error {
 
 		close(errCh)
 	}()
+
+	if onReady != nil {
+		onReady(listener.Addr().String())
+	}
 
 	signalCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -39,4 +49,12 @@ func Run(server *http.Server, shutdownTimeout time.Duration) error {
 	defer cancel()
 
 	return server.Shutdown(shutdownCtx)
+}
+
+func listenAddress(server *http.Server) string {
+	if server.Addr == "" {
+		return ":http"
+	}
+
+	return server.Addr
 }

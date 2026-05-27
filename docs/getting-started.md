@@ -42,7 +42,7 @@ Toda configuração entra por variáveis de ambiente.
 
 
 ```bash
-export APP_PORT=80
+export APP_PORT=8080
 export DB_HOST=127.0.0.1
 export DB_PORT=5432
 export DB_NAME=gotodolist
@@ -50,6 +50,7 @@ export DB_USER=gotodolist
 export DB_PASSWORD='senha-secreta'
 export DB_SSLMODE=disable
 ```
+Use `8080` no ambiente local para evitar a necessidade de privilegios elevados ao abrir uma porta abaixo de `1024`. Se quiser rodar na porta `80`, execute o processo como `root`.
 3. Ou, se preferir, crie um arquivo `variaveis-monolito` com as variáveis acima e rode:
 ```
 source ./variaveis-monolito
@@ -61,7 +62,7 @@ source ./variaveis-monolito
 go run ./monolito
 ```
 
-Aplicação executando: `http://localhost:80`
+Aplicação executando: `http://localhost:8080`
 
 ## Executando a API REST
 
