@@ -61,7 +61,7 @@ source ./variaveis-monolito
 go run ./monolito
 ```
 
-Aplicação executando: `http://localhost:8080`
+Aplicação executando: `http://localhost:8080` ou `http://ip-do-servidor:8080`
 
 Use `8080` no ambiente local para evitar a necessidade de privilegios elevados ao abrir uma porta abaixo de `1024`. Se quiser rodar na porta `80`, execute os passos 2,3 e 4 como `root`.
 
