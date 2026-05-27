@@ -34,7 +34,9 @@ func TestRunInvokesReadyCallbackAfterSuccessfulBind(t *testing.T) {
 
 	duplicateListener, err := net.Listen("tcp", addr)
 	if err == nil {
-		duplicateListener.Close()
+		if closeErr := duplicateListener.Close(); closeErr != nil {
+			t.Fatalf("duplicateListener.Close() returned error: %v", closeErr)
+		}
 		t.Fatalf("expected %q to stay bound while server is running", addr)
 	}
 
@@ -57,7 +59,11 @@ func TestRunReturnsBindErrorBeforeReadyCallback(t *testing.T) {
 	if err != nil {
 		t.Fatalf("listen: %v", err)
 	}
-	defer occupiedListener.Close()
+	t.Cleanup(func() {
+		if closeErr := occupiedListener.Close(); closeErr != nil {
+			t.Errorf("occupiedListener.Close() returned error: %v", closeErr)
+		}
+	})
 
 	readyCalled := false
 	server := &http.Server{
