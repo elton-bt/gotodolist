@@ -36,9 +36,10 @@ func main() {
 	service := todo.NewService(store)
 	server := newHTTPServer(cfg, service)
 
-	logger.Info("servidor iniciado", "app", cfg.AppName, "addr", server.Addr)
-	if err := appRuntime.Run(server, cfg.ShutdownTimeout); err != nil {
-		logger.Error("servidor encerrado com erro")
+	if err := appRuntime.Run(server, cfg.ShutdownTimeout, func(addr string) {
+		logger.Info("servidor iniciado", "app", cfg.AppName, "addr", addr)
+	}); err != nil {
+		logger.Error("servidor encerrado com erro", "err", err)
 		os.Exit(1)
 	}
 
