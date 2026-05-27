@@ -25,8 +25,8 @@ Toda configuração entra por variáveis de ambiente.
 | `DB_HOST` | Host do PostgreSQL | `localhost` |
 | `DB_PORT` | Porta do PostgreSQL | `5432` |
 | `DB_NAME` | Nome do banco | `gotodolist` |
-| `DB_USER` | Usuário do banco | `gotodolist` |
-| `DB_PASSWORD` | Senha do banco | `replace-me` |
+| `DB_USER` | Usuário do banco | `postgres` |
+| `DB_PASSWORD` | Senha do banco | `123456` |
 | `DB_SSLMODE` | Modo SSL do Postgres | `disable` |
 | `CORS_ALLOW_ORIGIN` | Origem permitida para a API REST | `*` |
 | `GOTODOLIST_API_BASE_URL` | Base da API usada pelo frontend | vazio, com fallback para `http://<host>:8081` |
@@ -46,11 +46,10 @@ export APP_PORT=8080
 export DB_HOST=127.0.0.1
 export DB_PORT=5432
 export DB_NAME=gotodolist
-export DB_USER=gotodolist
-export DB_PASSWORD='senha-secreta'
+export DB_USER=postgres
+export DB_PASSWORD='123456'
 export DB_SSLMODE=disable
 ```
-Use `8080` no ambiente local para evitar a necessidade de privilegios elevados ao abrir uma porta abaixo de `1024`. Se quiser rodar na porta `80`, execute o processo como `root`.
 3. Ou, se preferir, crie um arquivo `variaveis-monolito` com as variáveis acima e rode:
 ```
 source ./variaveis-monolito
@@ -63,6 +62,8 @@ go run ./monolito
 ```
 
 Aplicação executando: `http://localhost:8080`
+
+Use `8080` no ambiente local para evitar a necessidade de privilegios elevados ao abrir uma porta abaixo de `1024`. Se quiser rodar na porta `80`, execute os passos 2,3 e 4 como `root`.
 
 ## Executando a API REST
 
