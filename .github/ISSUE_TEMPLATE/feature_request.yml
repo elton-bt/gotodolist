@@ -1,0 +1,46 @@
+name: ✨ Solicitação de Funcionalidade
+description: Sugira uma melhoria, nova funcionalidade ou ajuste na experiência do produto.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Descreva a ideia de forma clara e técnica. Inclua contexto de negócio, problema resolvido e critérios de aceitação.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema ou oportunidade
+      description: Qual necessidade motivou esta sugestão?
+      placeholder: Ex.: Usuários precisam acompanhar melhor o progresso das tarefas concluídas.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposta
+      description: Descreva a funcionalidade sugerida.
+      placeholder: Implementar filtros por status e ordenação por data de criação.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Critérios de aceitação
+      description: Quais comportamentos tornam a funcionalidade concluída?
+      placeholder: |
+        - Usuário consegue filtrar por pendentes/concluídas.
+        - Ordenação por data funciona em todas as listas.
+        - A API retorna os dados corretamente.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto adicional
+      description: Inclua telas, fluxos, links ou anexos relevantes.
+      validations:
+        required: false

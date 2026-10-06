@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentação do projeto
+    url: https://github.com/elton-bt/gotodolist/blob/main/README.md
+    about: Consulte o guia de execução, arquitetura e troubleshooting antes de abrir um relatório.
+  - name: ❓ Dúvidas de uso
+    url: https://github.com/elton-bt/gotodolist/discussions
+    about: Para perguntas gerais sobre uso, configuração ou deploy, utilize a área de discussão do repositório.

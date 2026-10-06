@@ -1,0 +1,22 @@
+# Define os responsáveis por cada parte do repositório.
+# A revisão deste arquivo é crítica para manter a governança e rastreabilidade.
+
+* @elton-bt @Sig-afk
+
+# Infraestrutura e automações
+.github/ @elton-bt @Sig-afk
+Dockerfile* @elton-bt @Sig-afk
+docker-compose*.yml @elton-bt @Sig-afk
+docker-compose*.yaml @elton-bt @Sig-afk
+
+# Aplicação principal
+monolito/ @elton-bt @Sig-afk
+internal/ @elton-bt @Sig-afk
+
+desacoplado/backend/ @elton-bt @Sig-afk
+desacoplado/frontend/ @elton-bt @Sig-afk
+
+# Documentação e processo
+README.md @elton-bt @Sig-afk
+docs/ @elton-bt @Sig-afk
+CONTRIBUTING.md @elton-bt @Sig-afk
