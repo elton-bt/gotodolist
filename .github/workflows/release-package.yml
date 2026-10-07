@@ -1,0 +1,83 @@
+name: Release Please & Publish Multi-Arch Container
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Permissões estritas necessárias para gerenciar Releases, Tags e publicar no GHCR
+permissions:
+  contents: write        # Necessário para criar tags Git, releases e commitar changelog
+  pull-requests: write   # Necessário para abrir e atualizar o Release PR
+  packages: write        # Necessário para fazer o push da imagem conteinerizada no GHCR
+
+jobs:
+  # -----------------------------------------------------------------
+  # JOB 1: Automação SemVer e Changelog com Google Release Please
+  # -----------------------------------------------------------------
+  release-please:
+    name: 🤖 Google Release Please (SemVer & Changelog)
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - name: 🚀 Executar Release Please Engine
+        id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          # Para aplicações Node use 'node'. Para Go, Python ou genéricos use 'simple'
+          release-type: node
+
+  # -----------------------------------------------------------------
+  # JOB 2: Compilação Multi-Arquitetura e Publicação no GHCR
+  # -----------------------------------------------------------------
+  publish-container:
+    name: 🐳 Buildx Multi-Arch & Push to GHCR
+    needs: [release-please]
+    # SÓ EXECUTA SE UMA NOVA RELEASE FOI EFETIVAMENTE PUBLICADA PELO RELEASE PLEASE
+    if: ${{ needs.release-please.outputs.release_created == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: 📥 Checkout do Código na Tag Criada
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+
+      - name: 🔧 Configurar Emulação QEMU (Suporte a compilação cruzada ARM64)
+        uses: docker/setup-qemu-action@v3
+
+      - name: 🛠️ Configurar Docker Buildx (Construtor Multi-Plataforma)
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔑 Autenticação no GitHub Container Registry (GHCR)
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Extrair Metadados e Tags SemVer Automáticas
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ needs.release-please.outputs.tag_name }}
+            type=semver,pattern={{version}},value=${{ needs.release-please.outputs.tag_name }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release-please.outputs.tag_name }}
+
+      - name: 🚀 Compilar e Publicar Imagem Multi-Arch (amd64 e arm64)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
