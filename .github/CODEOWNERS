@@ -1,0 +1,11 @@
+# Arquivo de definição de proprietários de código (CODEOWNERS)
+# Documentação: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# A equipe inteira é responsável pelo repositório como um todo
+* @arthurfellypepe
+
+# Modificações críticas de infraestrutura, conteinerização e pipelines exigem revisão de infra:
+Dockerfile* @arthurfellypepe
+docker-compose*.yml @arthurfellypepe
+docker-compose*.yaml @arthurfellypepe
+.github/workflows/ @arthurfellypepe
