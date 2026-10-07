@@ -1,0 +1,77 @@
+name: 🐛 Relato de Bug
+description: Crie um relatório de erro detalhado para ajudar a equipe a reproduzir e corrigir o problema.
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por dedicar seu tempo para relatar este problema! Por favor, preencha as informações abaixo com a maior precisão possível.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: Descrição do Comportamento Inesperado
+      description: O que aconteceu de errado?
+      placeholder: Explique de forma clara o que ocorreu de inconsistente na aplicação ou container...
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Passos para Reproduzir o Problema
+      description: Como os outros desenvolvedores podem replicar essa falha?
+      placeholder: |
+        1. Execute o comando 'docker compose --env-file .env -f docker-compose-monolito-dev.yaml up --build'
+        2. Acesse a rota 'http://localhost:8080/health'
+        3. Observe o código HTTP retornado...
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment-mode
+    attributes:
+      label: Modo de Implantação
+      description: Qual variante da aplicação apresentou o erro?
+      options:
+        - Monolito (docker-compose-monolito-*.yaml)
+        - Desacoplado - API backend (docker-compose-*.yaml)
+        - Desacoplado - Frontend
+        - Execução local com go run
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Ambiente de Execução
+      description: Onde o erro ocorreu?
+      options:
+        - Linux Nativo (Ubuntu/Debian/Fedora)
+        - Windows 11 com WSL2 (Ubuntu)
+        - macOS (Apple Silicon / Intel)
+        - Nuvem OCI (Ambiente de Produção/Homologação)
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: Versão da Aplicação / Tag da Imagem
+      description: Valor de APP_VERSION ou tag da imagem do GHCR utilizada.
+      placeholder: "ex.: 1.2.0, latest, dev"
+    validations:
+      required: false
+  - type: textarea
+    id: logs-evidence
+    attributes:
+      label: Logs e Evidências
+      description: Cole a saída exata dos comandos do terminal (ex.: docker compose logs, saída do curl, etc.)
+      render: shell
+    validations:
+      required: false
+  - type: checkboxes
+    id: validations-check
+    attributes:
+      label: Validação Prévia
+      options:
+        - label: Eu confirmei que não existe outra issue aberta sobre este mesmo problema.
+          required: true
+        - label: Eu testei com os containers atualizados a partir da branch principal.
+          required: true

@@ -1,0 +1,41 @@
+name: ✨ Sugestão de Funcionalidade
+description: Proponha uma nova funcionalidade ou melhoria para a aplicação ou infraestrutura.
+title: "[FEAT]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problema ou Motivação
+      description: Qual problema esta funcionalidade resolve?
+      placeholder: "Hoje não é possível ... o que obriga a ..."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solução Proposta
+      description: Descreva como você imagina a funcionalidade.
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Escopo Afetado
+      multiple: true
+      options:
+        - API / Backend (Go)
+        - Frontend
+        - Banco de Dados (PostgreSQL)
+        - Docker / Compose
+        - CI/CD (GitHub Actions)
+        - Documentação
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas Consideradas
+      description: Outras abordagens que você avaliou.
+    validations:
+      required: false
