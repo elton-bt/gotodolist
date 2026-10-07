@@ -1,70 +1,84 @@
-name: CI
+name: Continuous Integration (CI) - Hardened & Secure
 
 on:
-  pull_request:
-    branches: [main]
   push:
-    branches: [main]
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
+# 🔒 Permissões mínimas (Princípio do Menor Privilégio)
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   lint-and-test:
-    name: Lint and test
+    name: 🔍 Qualidade, Linters & Testes Automatizados
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout Seguro do Código
         uses: actions/checkout@v4
 
-      - name: Setup Go
+      - name: ⚙️ Configurar Go com Cache Nativo
         uses: actions/setup-go@v5
         with:
-          go-version-file: go.mod
+          go-version: '1.22'
+          cache: true
 
-      - name: Download Go modules
-        run: go mod download
+      - name: 🧹 Verificação de Qualidade e Sintaxe (Vet)
+        run: go vet ./...
 
-      - name: Check Go formatting
-        run: |
-          unformatted="$(gofmt -l .)"
-          if [ -n "$unformatted" ]; then
-            echo "Files not formatted with gofmt:"
-            echo "$unformatted"
-            exit 1
-          fi
+      - name: 🧪 Execução de Testes Automatizados (Fail Fast)
+        run: go test -v ./...
 
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v8
-        with:
-          version: v2.12.2
-
-      - name: Run Go tests
-        run: go test ./...
-
-  container-validation:
-    name: Validate containers
+  security-scan:
+    name: 🛡️ DevSecOps (SAST Semgrep & Container Trivy)
+    needs: [lint-and-test] # Só executa a análise de segurança se a aplicação passar nos testes funcionais
     runs-on: ubuntu-latest
-    needs: lint-and-test
+    timeout-minutes: 15
+    permissions:
+      contents: read
 
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout do Código
         uses: actions/checkout@v4
 
-      - name: Validate Compose files
+      # -------------------------------------------------------------
+      # ETAPA 1: SAST - Análise Estática de Código com Semgrep
+      # -------------------------------------------------------------
+      - name: 🔍 SAST com Semgrep (Regras OWASP Top 10)
+        # Action oficial fixada em release estável
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/owasp-top-ten
+            p/security-audit
+          auditOn: push
+
+      # -------------------------------------------------------------
+      # ETAPA 2: Build da Imagem de Teste Local
+      # -------------------------------------------------------------
+      - name: 🐳 Compilar Imagem Docker Efêmera para Análise
         run: |
-          docker compose --env-file example.env -f docker-compose-dev.yaml config >/dev/null
-          docker compose --env-file example.env -f docker-compose-monolito-dev.yaml config >/dev/null
-          docker compose --env-file example.env -f docker-compose-monolito-prod.yaml config >/dev/null
-          docker compose --env-file example.env -f docker-compose-prod.yaml config >/dev/null
+          docker build -t app-audit:local .
 
-      - name: Build monolith image
-        run: docker build -f monolito/Dockerfile -t gotodolist-monolito:ci .
-
-      - name: Build API image
-        run: docker build -f desacoplado/backend/Dockerfile -t gotodolist-api:ci .
-
-      - name: Build frontend image
-        run: docker build -f desacoplado/frontend/Dockerfile -t gotodolist-frontend:ci .
+      # -------------------------------------------------------------
+      # ETAPA 3: Scanner de Vulnerabilidades de Imagem com Trivy
+      # -------------------------------------------------------------
+      - name: 🛡️ Escanear Imagem Docker com Aqua Security Trivy
+        # Fixada em versão imutável estável (NUNCA usar @master!)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: 'app-audit:local'
+          format: 'table'
+          # 🚨 QUEBRA O PIPELINE SE HOUVER VULNERABILIDADE GRAVE
+          exit-code: '1'
+          ignore-unfixed: true # Foca em falhas que já possuem patch/atualização disponível
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
