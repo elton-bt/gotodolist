@@ -1,0 +1,15 @@
+# Arquivo de definição de proprietários de código (CODEOWNERS)
+# Documentação: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# O mantenedor é responsável pelo repositório como um todo
+* @elton-bt
+
+# Modificações críticas de infraestrutura, conteinerização e pipelines exigem revisão de infra:
+**/Dockerfile* @elton-bt
+docker-compose*.yml @elton-bt
+docker-compose*.yaml @elton-bt
+.github/workflows/ @elton-bt
+
+# Dependências Go (supply chain)
+go.mod @elton-bt
+go.sum @elton-bt

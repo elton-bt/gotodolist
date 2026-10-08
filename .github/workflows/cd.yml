@@ -1,0 +1,29 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ["Release Please & Publish Multi-Arch Container"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    name: Deploy via Portainer Webhook
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Aguardar propagação da imagem no GHCR
+        run: sleep 30
+
+      - name: Chamar webhook do Portainer
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST -k \
+            "${{ secrets.PORTAINER_WEBHOOK_URL }}")
+          echo "HTTP Status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" -ne 204 ]; then
+            echo "❌ Webhook retornou status $HTTP_STATUS (esperado: 204)"
+            exit 1
+          fi
+          echo "✅ Webhook chamado com sucesso — Portainer está re-deployando a stack"

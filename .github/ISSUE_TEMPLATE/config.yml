@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentação do Projeto
+    url: https://github.com/elton-bt/gotodolist/tree/main/docs
+    about: Consulte o guia de primeiros passos e a documentação de Docker/CI antes de abrir uma issue.
